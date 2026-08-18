@@ -20,6 +20,14 @@
 
 ![DeepSeek Harness about window](docs/images/about-window.png)
 
+## 下载
+
+最新版本：
+
+[GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
+
+当前版本提供 Intel / x86_64 macOS 构建。
+
 ## 工作方式
 
 整个桌面应用本质上是对现有 Harness Web Runtime 的原生封装。

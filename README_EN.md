@@ -20,6 +20,14 @@ The goal is to provide a lightweight `.app` distribution that runs DeepSeek Harn
 
 ![DeepSeek Harness about window](docs/images/about-window.png)
 
+## Download
+
+Latest release:
+
+[GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
+
+The current release provides a macOS build for Intel / x86_64.
+
 ## How It Works
 
 The desktop application is essentially a native shell around the existing Harness web runtime:
