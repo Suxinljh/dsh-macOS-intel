@@ -1,20 +1,16 @@
-# DeepSeek Harness — macOS Desktop Shell (Tauri 2)
+# DeepSeek Harness — macOS Desktop Shell
 
-> I built a Tauri 2 macOS desktop shell for DeepSeek Harness, primarily targeting Intel Macs.
->
-> The implementation does not modify the core Harness architecture. It bundles the existing `dsh web` runtime and a portable Node.js runtime, then launches it locally from a native Tauri application.
->
-> Would the maintainers be interested in accepting this as an optional macOS desktop distribution?
->
-> I can submit a PR if this direction is acceptable.
+> 基于 Tauri 2 的 DeepSeek Harness macOS 桌面版，当前主要面向 Intel（x86_64）Mac。
 
-This repository contains an optional macOS desktop shell for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), built with **Tauri 2**. The primary target is **x86_64 / Intel macOS**.
+[English](README_EN.md) 这是一个围绕 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 构建的 macOS 桌面壳。
 
-The shell does **not** modify the core Harness architecture. It packages the existing `dsh web` runtime together with a portable Node.js runtime. On launch, a native Rust/Tauri process starts the local `dsh web` server, and the Tauri WebView loads the local UI over `http://127.0.0.1:<port>`.
+项目不修改 DeepSeek Harness 的核心架构，也不重新实现 Web 应用，而是将现有的 `dsh web` 运行时、Node.js Runtime 与 Tauri 2 桌面应用组合在一起。
 
-> The `.app` distribution is intended to replace the legacy `package-macos-x64.sh` (`.pkg` installer) as the primary desktop distribution format.
+启动桌面应用后，由 Tauri / Rust 负责启动本地 `dsh web` 服务，再通过 Tauri WebView 加载本地 Web UI，从而让 DeepSeek Harness 以 macOS `.app` 的形式运行。
 
-## Interface Preview
+> 本项目为非官方的独立桌面发行方案，目前主要用于验证和探索 macOS 原生桌面分发方式。
+
+## 界面预览
 
 ### DeepSeek Harness Desktop Interface
 
@@ -24,119 +20,264 @@ The shell does **not** modify the core Harness architecture. It packages the exi
 
 ![DeepSeek Harness about window](docs/images/about-window.png)
 
-## Architecture
+## 工作方式
+
+整个桌面应用本质上是对现有 Harness Web Runtime 的原生封装。
 
 ```text
-┌──────────────────────────────────────────────────────────┐
-│  DeepSeek Harness.app (Tauri 2, x86_64)                   │
-│                                                          │
-│  Contents/                                               │
-│    MacOS/dsh                ← compiled Rust launcher      │
-│    Resources/                                             │
-│      runtime/              ← bundled Node.js (x64)       │
-│      app/                  ← dsh runtime slice            │
-│        apps/cli/lib/bin.js ← dsh CLI entry point          │
-│        apps/web/dist/      ← built frontend assets        │
-│        node_modules/       ← portable runtime dependencies│
-│                                                          │
-│  Startup flow (Rust setup):                               │
-│   1. Resolve the application Resources directory          │
-│   2. Spawn: node runtime/bin/node app/apps/cli/lib/bin.js│
-│        web --host 127.0.0.1 --port <port>                 │
-│   3. Read the "dsh web: http://127.0.0.1:<port>"          │
-│      readiness line and resolve the actual port            │
-│   4. Create a WebView window for the local URL             │
-│   5. Send SIGTERM to the Node child on application exit    │
-└──────────────────────────────────────────────────────────┘
+DeepSeek Harness.app
+│
+├── Tauri 2 / Rust
+│
+├── Node.js Runtime
+│
+└── DeepSeek Harness Runtime
+    ├── dsh web
+    ├── apps/web/dist
+    └── Runtime Dependencies
 ```
 
-`dsh web` runs a local `node:http` server. The default server address is `127.0.0.1:3080`, although the desktop shell uses port `0` by default so the operating system can select an available port. `frontend-static` serves `apps/web/dist`, while `apiproxy` provides the `/api` routes.
+启动流程：
 
-The command does not automatically open a browser, which makes it suitable for a native WebView shell. The server is bound to the loopback interface and the WebView uses the same local origin for the UI and API requests.
+```text
+Tauri Desktop App
+       │
+       ▼
+启动内置 Node.js
+       │
+       ▼
+dsh web --host 127.0.0.1 --port 0
+       │
+       ▼
+本地 HTTP Server
+       │
+       ▼
+Tauri WebView
+       │
+       ▼
+http://127.0.0.1:<port>
+```
 
-## Prerequisites
+桌面版默认使用 `port 0`，由操作系统自动分配可用端口，因此不会固定占用 `3080`，也可以避免与其他本地服务发生端口冲突。
 
-- Intel macOS (`x86_64`). Apple Silicon may run the x86_64 build through Rosetta, but this project is built for Intel Macs by default.
-- Xcode Command Line Tools:
+本地服务仅监听 `127.0.0.1`，不会直接暴露到局域网。
 
-  ```bash
-  xcode-select --install
-  ```
+## 项目结构
 
-- A stable Rust toolchain: <https://rustup.rs>
-- Node.js 22 for the build and packaging scripts. The packaged application uses the bundled Node runtime at runtime.
-- The official `deepseek-harness` repository. It is intentionally maintained outside this repository and is not included in the GitHub submission copy.
-- `@tauri-apps/cli`, installed through the local package manifest.
+```text
+dsh-macOS-intel/
+│
+├── docs/
+│   └── images/
+│       ├── desktop-overview.jpg
+│       └── about-window.png
+│
+├── scripts/
+│   ├── build-tauri-macos.sh
+│   └── gen-icon.py
+│
+├── src-tauri/
+│   ├── src/
+│   │   ├── lib.rs
+│   │   └── main.rs
+│   │
+│   ├── icons/
+│   │   ├── icon.icns
+│   │   └── icon.png
+│   │
+│   ├── capabilities/
+│   │   └── default.json
+│   │
+│   ├── gen/
+│   │   └── schemas/
+│   │
+│   ├── Cargo.toml
+│   ├── Cargo.lock
+│   ├── build.rs
+│   └── tauri.conf.json
+│
+├── ui-stub/
+│   └── index.html
+│
+├── package.json
+├── package-lock.json
+├── package-macos-x64.sh
+├── .gitignore
+└── README.md
+```
 
-## Building
+各目录主要用途：
 
-Run the following commands from the repository root.
+- `src-tauri/`：Tauri 2 桌面应用及 Rust 启动器。
+- `src-tauri/src/`：负责启动和管理本地 Harness Server，以及创建 WebView。
+- `src-tauri/icons/`：macOS 应用图标。
+- `scripts/`：构建、打包和资源处理脚本。
+- `docs/images/`：README 使用的项目截图。
+- `ui-stub/`：Tauri WebView 的基础入口。
+- `package.json`：Tauri CLI 和项目构建依赖。
+
+官方 DeepSeek Harness 源代码不会直接放在这个仓库中。
+
+构建时，通过 `CORE_REPO` 指向本地的官方 Harness 源码目录，由构建脚本读取需要的 Runtime 和前端构建产物。
+
+## 与 DeepSeek Harness 的关系
+
+本项目定位为一个独立的 macOS Desktop Distribution Layer。
+
+```text
+官方 DeepSeek Harness
+        │
+        │ dsh web
+        ▼
+Harness Web Runtime
+        │
+        ▼
+Tauri 2 Desktop Shell
+        │
+        ▼
+DeepSeek Harness.app
+```
+
+桌面壳主要负责：
+
+- macOS `.app` 封装
+- Tauri 生命周期管理
+- Node.js Runtime 管理
+- `dsh web` 启动与退出
+- 本地端口管理
+- WebView 加载
+- macOS 应用资源
+- 构建和打包流程
+
+Harness 本身的 Web UI、API 和核心运行逻辑仍然由官方项目提供。
+
+## 构建要求
+
+当前主要针对：
+
+- macOS
+- Intel / x86_64
+- Node.js 22
+- Rust
+- Xcode Command Line Tools
+- 官方 DeepSeek Harness 本地源码
+
+安装 Xcode Command Line Tools：
 
 ```bash
-# Install the Tauri CLI dependencies.
+xcode-select --install
+```
+
+安装 Rust：
+
+[https://rustup.rs](https://rustup.rs/)
+
+Node.js 仅用于构建和打包。
+
+生成 `.app` 后，应用运行时使用的是随应用一起打包的 Node.js Runtime，用户不需要另外安装 Node.js。
+
+## 构建
+
+首先安装项目依赖：
+
+```bash
 npm install
-
-# Build the release .app using existing core repository build artifacts.
-bash scripts/build-tauri-macos.sh
-
-# Reinstall dependencies and rebuild the core Harness before packaging.
-bash scripts/build-tauri-macos.sh --rebuild
-
-# Use the conservative runtime trimming mode.
-bash scripts/build-tauri-macos.sh --trim
-
-# Build a debug application.
-bash scripts/build-tauri-macos.sh --debug
-
-# Specify the location of the official DeepSeek Harness repository.
-CORE_REPO=/path/to/deepseek-harness bash scripts/build-tauri-macos.sh
 ```
 
-The release application is generated at:
-
-```text
-src-tauri/target/x86_64-apple-darwin/release/bundle/macos/DeepSeek Harness.app
-```
-
-The build script generates `src-tauri/resources/app.tar.gz` and `src-tauri/resources/runtime` as temporary packaging resources. These generated resources are ignored by Git and should not be committed.
-
-## Creating a DMG
-
-The default build produces the `.app` bundle. On macOS, a DMG can be created with the Tauri-generated `bundle_dmg.sh` script and the system `hdiutil` tool.
-
-Use a clean source directory containing only the application bundle:
+然后执行：
 
 ```bash
-APP="src-tauri/target/x86_64-apple-darwin/release/bundle/macos/DeepSeek Harness.app"
-SRC="$(mktemp -d /tmp/dsh-dmg-source.XXXXXX)"
-cp -a "$APP" "$SRC/"
-
-src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/bundle_dmg.sh \
-  --skip-jenkins \
-  --no-internet-enable \
-  --app-drop-link 540 140 \
-  "src-tauri/target/x86_64-apple-darwin/release/bundle/macos/DeepSeek Harness_0.1.0_x64.dmg" \
-  "$SRC"
-
-rm -rf "$SRC"
+bash scripts/build-tauri-macos.sh
 ```
 
-The DMG is a local test distribution unless the application has been code-signed and notarized.
+如果官方 Harness 源码不在默认路径，可以手动指定：
 
-## Running
+```bash
+CORE_REPO=/path/to/deepseek-harness \
+bash scripts/build-tauri-macos.sh
+```
 
-Open the generated `DeepSeek Harness.app` directly.
+### 重新构建 Harness
 
-The Rust launcher:
+如果希望在打包前重新安装依赖并构建官方 Harness：
 
-1. Resolves the bundled Node.js runtime and application archive.
-2. Extracts the runtime archive into the local desktop runtime directory when needed.
-3. Starts `dsh web` on a dynamically assigned loopback port.
-4. Waits for the server readiness message.
-5. Creates the Tauri WebView window after the server is ready.
-6. Terminates the local Node process when the desktop application exits.
+```bash
+bash scripts/build-tauri-macos.sh --rebuild
+```
 
-Runtime logs are written to:
+### 精简 Runtime
+
+可以使用：
+
+```bash
+bash scripts/build-tauri-macos.sh --trim
+```
+
+该模式会删除部分开发阶段不需要的文件和目录，以减小最终应用体积。
+
+### Debug 构建
+
+```bash
+bash scripts/build-tauri-macos.sh --debug
+```
+
+Release `.app` 默认生成在：
+
+```text
+src-tauri/target/x86_64-apple-darwin/release/bundle/macos/
+```
+
+## 运行
+
+构建完成后直接打开：
+
+```text
+DeepSeek Harness.app
+```
+
+应用启动后会自动：
+
+1. 定位内置 Node.js Runtime。
+2. 定位打包后的 Harness Runtime。
+3. 启动 `dsh web`。
+4. 使用系统自动分配的本地端口。
+5. 等待 Web Server 启动完成。
+6. 创建 Tauri WebView。
+7. 加载本地 Harness UI。
+8. 应用退出时关闭对应的 Node.js Server。
+
+因此用户不需要手动执行：
+
+```bash
+dsh web
+```
+
+也不需要另外打开浏览器。
+
+## Runtime 数据
+
+打包过程不会将开发环境中的个人 Harness 数据复制到 `.app` 内。
+
+以下内容不会被主动打包：
+
+- 本地会话记录
+- Credentials
+- Plugin Cache
+- 用户 Profile
+- `~/.dsh` 数据
+- 开发环境配置
+
+当前桌面版启动 Harness Runtime 时会继承用户的 `HOME` 环境变量。
+
+因此，具体 Runtime 行为仍然取决于当前 DeepSeek Harness 的数据存储机制。已有的 `~/.dsh` 数据可能会被当前 Harness Runtime 使用。
+
+运行日志位于：
+
+```text
+~/.dsh/logs/
+```
+
+例如：
 
 ```text
 ~/.dsh/logs/dsh-server-stdout.log
@@ -144,62 +285,93 @@ Runtime logs are written to:
 ~/.dsh/logs/dsh-server-desktop.log
 ```
 
-The port can be overridden with the `DSH_PORT` environment variable. The default desktop configuration uses port `0` to avoid conflicts with another local service.
+后续可以考虑将桌面版数据迁移到独立的 macOS Application Support 目录，以进一步隔离 CLI 与 Desktop 数据。
 
-## Runtime Data Isolation
+## Runtime 打包
 
-The packaging process does not copy the developer's local `~/.dsh` directory, conversation history, plugin cache messages, credentials, or local profiles into the `.app` bundle.
-
-The current launcher inherits the user's `HOME` environment and the core Harness may use the current user's `~/.dsh` directory at runtime. A future production distribution should consider assigning a dedicated application data directory under:
+最终 `.app` 主要包含三个部分：
 
 ```text
-~/Library/Application Support/DeepSeek Harness/
+DeepSeek Harness.app
+│
+├── Tauri Desktop Application
+│
+├── Node.js Runtime
+│
+└── Harness Runtime
+    ├── CLI Runtime
+    ├── Web Frontend
+    └── Required Dependencies
 ```
 
-This would prevent the desktop shell from reading or writing the user's existing command-line Harness data.
+Harness Runtime 会在构建过程中从官方 Harness 本地源码生成。
 
-## Dependency Trimming and Optimization
-
-- **Conservative trimming (`--trim`)**: preserves the relative pnpm workspace links required by the current runtime layout, while removing non-runtime directories such as documentation, website files, examples, Python sources, root-level assets, build caches, and landlock test materials. The frontend assets under `apps/web/dist/assets` are preserved.
-- **Why not `pnpm deploy --prod` yet**: the current workspace contains runtime peer and override dependencies that are not always inferred by `pnpm deploy`. For example, packages such as `@deepseek-ai/cordis-plugin-group` and `@deepseek-ai/cosmokit` can be omitted from the deployed closure. The packaging script therefore prioritizes a verified, relocatable runtime tree over an aggressively trimmed but incomplete dependency graph.
-- **Archive-based resource packaging**: the runtime app tree is stored as `app.tar.gz` so the Tauri bundler does not recursively walk pnpm symlink cycles.
-- **Node.js runtime trimming**: npm, npx, headers, and documentation are removed from the bundled Node.js distribution. The Node executable and runtime libraries remain available.
-- **Startup performance**: the server binds to an operating-system-assigned port, and the Rust launcher loads the WebView immediately after receiving the readiness line instead of polling a fixed port.
-- **Rust binary size**: the release profile uses size optimization, LTO, a single code-generation unit, and symbol stripping.
-
-## Signing and Notarization
-
-Local builds are suitable for development and testing. For public distribution, configure an Apple Developer ID Application certificate, code-sign the application, notarize it with Apple, and staple the notarization ticket.
-
-The relevant Tauri configuration is in:
+为了避免将大量生成文件提交到 Git，以下资源属于构建过程中的临时文件：
 
 ```text
-src-tauri/tauri.conf.json
+src-tauri/resources/app.tar.gz
+src-tauri/resources/runtime/
 ```
 
-Typical public distribution requirements include:
+这些目录已经加入 `.gitignore`。
 
-- Apple Developer account access;
-- Developer ID Application signing identity;
-- Hardened Runtime and appropriate entitlements;
-- `codesign` for the `.app` bundle;
-- `notarytool` for Apple notarization;
-- `stapler` to attach the notarization ticket;
-- optional DMG signing after the signed application has been packaged.
+## Intel 支持
 
-## Repository Scope
+当前版本主要针对 Intel Mac：
 
-This repository is intentionally limited to the optional macOS desktop shell. The official DeepSeek Harness source tree is not vendored here. Set `CORE_REPO` to a local checkout of the official repository when building.
+```text
+x86_64-apple-darwin
+```
 
-Generated dependencies, runtime archives, Tauri target directories, old installers, local verification output, and WorkBuddy metadata are excluded by `.gitignore`.
+Apple Silicon Mac 理论上可以通过 Rosetta 运行 Intel 版本，但当前项目并未以 Apple Silicon 为主要构建目标。
 
-## Maintainer Feedback
+后续可以根据实际需求增加：
 
-This implementation is being proposed as an optional macOS distribution for DeepSeek Harness. Feedback from the maintainers would be welcome regarding:
+```text
+Intel
+x86_64
 
-- whether a Tauri-based desktop shell is an acceptable direction;
-- whether the shell should live in the main repository or a separate repository;
-- whether Intel-first support is useful, and whether an Apple Silicon or universal build should be added;
-- the preferred runtime data isolation and release-signing model.
+Apple Silicon
+arm64
 
-If this direction is acceptable, I would be happy to submit a PR for review.
+Universal
+x86_64 + arm64
+```
+
+## 当前状态
+
+目前这是一个独立的 macOS Desktop Shell 实现。
+
+当前重点是验证：
+
+- Tauri 2 是否适合作为 Harness 的 macOS 桌面容器；
+- `dsh web` 是否适合直接作为桌面版本地 Runtime；
+- 内置 Node.js Runtime 的方式是否适合作为独立发行方案；
+- Intel macOS 是否值得作为单独发行版本维护；
+- Desktop 与 CLI Runtime 的数据目录应该如何隔离。
+
+项目本身尽量保持独立，不修改 DeepSeek Harness 的核心代码。
+
+## 关于官方项目
+
+这个项目的目标不是创建一个独立的 Harness 分支，而是探索一种额外的 macOS 分发方式。
+
+如果这种方案符合官方项目的方向，可以进一步根据维护者的意见：
+
+- 调整项目结构；
+- 移入官方仓库；
+- 作为独立 Desktop Package 维护；
+- 增加 Apple Silicon / Universal Build；
+- 根据官方 Runtime 结构调整打包逻辑。
+
+欢迎 DeepSeek Harness Maintainers 对项目结构和 Desktop Distribution 方案提出意见。
+
+## 声明
+
+本项目是基于 DeepSeek Harness 的独立第三方 macOS Desktop Shell。
+
+**本项目不是官方 DeepSeek 产品，也不代表 DeepSeek 官方立场。**
+
+DeepSeek Harness 官方项目：
+
+https://github.com/deepseek-ai/deepseek-harness
