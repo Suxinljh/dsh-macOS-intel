@@ -1,0 +1,15 @@
+{
+  "name": "dsh-macos",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DeepSeek Harness (dsh) macOS desktop shell — Tauri 2",
+  "packageManager": "pnpm@11.7.0",
+  "scripts": {
+    "tauri": "tauri",
+    "build:app": "bash scripts/build-tauri-macos.sh",
+    "build:app:debug": "bash scripts/build-tauri-macos.sh --debug"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.5.0"
+  }
+}

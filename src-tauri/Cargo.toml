@@ -1,0 +1,31 @@
+[package]
+name = "dsh"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77.2"
+description = "DeepSeek Harness macOS desktop shell (Tauri 2)"
+authors = ["DeepSeek AI"]
+license = "MIT"
+default-run = "dsh"
+
+[lib]
+name = "dsh_desktop_shell_lib"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "dsh"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true

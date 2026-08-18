@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "DeepSeek Harness",
+  "version": "0.1.0",
+  "identifier": "com.deepseek-ai.dsh",
+  "mainBinaryName": "dsh",
+  "build": {
+    "frontendDist": "../ui-stub",
+    "devUrl": "http://127.0.0.1:3080"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app"],
+    "icon": [
+      "icons/icon.png",
+      "icons/icon.icns"
+    ],
+    "resources": {
+      "resources/app.tar.gz": "app.tar.gz",
+      "resources/runtime": "runtime"
+    },
+    "category": "DeveloperTool",
+    "shortDescription": "DeepSeek Harness desktop shell",
+    "longDescription": "DeepSeek Harness (dsh) macOS desktop application powered by Tauri 2. Bundles a local Node.js runtime and the dsh web server; the WebView loads the local UI over loopback.",
+    "macOS": {
+      "minimumSystemVersion": "10.15",
+      "frameworks": []
+    }
+  },
+  "plugins": {}
+}
