@@ -83,7 +83,7 @@ dsh-macOS-intel/
 ├── scripts/
 │   ├── build-tauri-macos.sh
 │   ├── gen-icon.py
-│   └── finalize-dmg-layout.sh
+│   └── build-dmg.sh
 │
 ├── src-tauri/
 │   ├── src/
@@ -121,7 +121,7 @@ dsh-macOS-intel/
 - `src-tauri/src/`：负责启动和管理本地 Harness Server，以及创建 WebView。
 - `src-tauri/icons/`：macOS 应用图标。
 - `scripts/`：构建、打包和资源处理脚本。
-- `scripts/finalize-dmg-layout.sh`：在 GUI 会话中为 DMG 写入图标布局/背景（需 Finder 自动化授权）。
+- `scripts/build-dmg.sh`：用 dmgbuild 生成带背景图与图标布局的 DMG（直接写入 .DS_Store，无需 Finder 自动化）。
 - `docs/images/`：README 使用的项目截图。
 - `ui-stub/`：Tauri WebView 的基础入口。
 - `package.json`：Tauri CLI 和项目构建依赖。
@@ -236,6 +236,23 @@ Release `.app` 默认生成在：
 ```text
 src-tauri/target/x86_64-apple-darwin/release/bundle/macos/
 ```
+
+### 构建 DMG（带背景图与图标布局）
+
+先安装 dmgbuild：
+
+```bash
+pip3 install dmgbuild
+```
+
+再执行：
+
+```bash
+bash scripts/build-dmg.sh
+```
+
+脚本会基于已构建的 `.app` 生成 `dist/DeepSeek.Harness.Intel-<version>_x64.dmg`。
+DMG 的背景图与图标布局通过 dmgbuild 直接写入 `.DS_Store`，不依赖 Finder 自动化，结果可复现。
 
 ## 运行
 

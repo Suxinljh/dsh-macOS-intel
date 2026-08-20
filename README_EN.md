@@ -83,7 +83,7 @@ dsh-macOS-intel/
 ├── scripts/
 │   ├── build-tauri-macos.sh
 │   ├── gen-icon.py
-│   └── finalize-dmg-layout.sh
+│   └── build-dmg.sh
 │
 ├── src-tauri/
 │   ├── icons/
@@ -222,6 +222,24 @@ The generated application is located at:
 ```text
 src-tauri/target/x86_64-apple-darwin/release/bundle/macos/
 ```
+
+### Building the DMG (with background image and icon layout)
+
+Install dmgbuild first:
+
+```bash
+pip3 install dmgbuild
+```
+
+Then run:
+
+```bash
+bash scripts/build-dmg.sh
+```
+
+The script produces `dist/DeepSeek.Harness.Intel-<version>_x64.dmg` from the built `.app`.
+The background image and icon layout are written directly into `.DS_Store` by dmgbuild,
+so no Finder automation is needed and the result is reproducible.
 
 ## Running
 
