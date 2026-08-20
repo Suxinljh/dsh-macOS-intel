@@ -11,6 +11,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# pnpm lockfile is not the source of truth here (npm/package-lock.json is used)
+pnpm-lock.yaml
+
 # Rust / Tauri build output
 target/
 src-tauri/target/
@@ -43,6 +46,11 @@ coverage/
 
 # Local WorkBuddy metadata and workspace state
 .workbuddy/
+
+# IDE / editor state
+.vscode/
+.idea/
+*.swp
 
 # The official DeepSeek Harness repository is maintained separately.
 # Use CORE_REPO=/path/to/deepseek-harness when building.

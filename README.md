@@ -22,7 +22,7 @@
 
 ## 下载
 
-最新版本：
+最新版本：**v0.2.0**
 
 [GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
 
@@ -82,7 +82,8 @@ dsh-macOS-intel/
 │
 ├── scripts/
 │   ├── build-tauri-macos.sh
-│   └── gen-icon.py
+│   ├── gen-icon.py
+│   └── finalize-dmg-layout.sh
 │
 ├── src-tauri/
 │   ├── src/
@@ -120,6 +121,7 @@ dsh-macOS-intel/
 - `src-tauri/src/`：负责启动和管理本地 Harness Server，以及创建 WebView。
 - `src-tauri/icons/`：macOS 应用图标。
 - `scripts/`：构建、打包和资源处理脚本。
+- `scripts/finalize-dmg-layout.sh`：在 GUI 会话中为 DMG 写入图标布局/背景（需 Finder 自动化授权）。
 - `docs/images/`：README 使用的项目截图。
 - `ui-stub/`：Tauri WebView 的基础入口。
 - `package.json`：Tauri CLI 和项目构建依赖。

@@ -22,7 +22,7 @@ The goal is to provide a lightweight `.app` distribution that runs DeepSeek Harn
 
 ## Download
 
-Latest release:
+Latest release: **v0.2.0**
 
 [GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
 
@@ -82,7 +82,8 @@ dsh-macOS-intel/
 │
 ├── scripts/
 │   ├── build-tauri-macos.sh
-│   └── gen-icon.py
+│   ├── gen-icon.py
+│   └── finalize-dmg-layout.sh
 │
 ├── src-tauri/
 │   ├── icons/
