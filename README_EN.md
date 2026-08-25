@@ -22,7 +22,7 @@ The goal is to provide a lightweight `.app` distribution that runs DeepSeek Harn
 
 ## Download
 
-Latest release: **v0.2.0**
+Latest release: **v0.1.1**
 
 [GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
 
@@ -54,7 +54,7 @@ Tauri Application
 Start bundled Node.js
        │
        ▼
-dsh web --host 127.0.0.1 --port 0
+dsh web --host 127.0.0.1 --port 0 --no-open
        │
        ▼
 Local HTTP server
@@ -363,6 +363,21 @@ This repository was created to explore whether the existing DeepSeek Harness web
 The implementation does not require architectural changes to Harness.
 
 If this approach is considered useful by the maintainers, the desktop shell can be adapted to the preferred upstream repository structure and submitted as a PR.
+
+## Changelog
+
+### v0.1.1
+
+- Aligned the desktop shell version with the official DeepSeek Harness release tag (`dsh-v0.1.1-rc.2`); the desktop shell version was adjusted from `0.2.0` to `0.1.1`.
+- Fixed an issue where the desktop app opened the system default browser on launch: newer harness `dsh web` opens a browser by default. The desktop shell now passes `--no-open` when starting `dsh web`, so the UI is served exclusively by the Tauri WebView and no external browser is launched.
+
+### v0.2.0
+
+- Improved DMG icon layout and background image by writing `.DS_Store` programmatically with `dmgbuild` for reproducible results.
+
+### v0.1.0
+
+- First runnable release: Tauri 2 desktop shell + bundled Node.js runtime + DeepSeek Harness runtime, with the UI rendered in the Tauri WebView.
 
 ## Disclaimer
 

@@ -22,7 +22,7 @@
 
 ## 下载
 
-最新版本：**v0.2.0**
+最新版本：**v0.1.1**
 
 [GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
 
@@ -54,7 +54,7 @@ Tauri Desktop App
 启动内置 Node.js
        │
        ▼
-dsh web --host 127.0.0.1 --port 0
+dsh web --host 127.0.0.1 --port 0 --no-open
        │
        ▼
 本地 HTTP Server
@@ -392,6 +392,21 @@ x86_64 + arm64
 - 根据官方 Runtime 结构调整打包逻辑。
 
 欢迎 DeepSeek Harness Maintainers 对项目结构和 Desktop Distribution 方案提出意见。
+
+## 更新记录
+
+### v0.1.1
+
+- 对齐 DeepSeek Harness 官方仓库版本号（`dsh-v0.1.1-rc.2`），桌面壳版本由 `0.2.0` 调整为 `0.1.1`。
+- 修复桌面端启动时会额外打开系统默认浏览器的问题：新版 harness 的 `dsh web` 默认会主动打开浏览器，桌面壳现已在启动参数中加入 `--no-open`，UI 统一由 Tauri WebView 承载，不再弹出外部浏览器。
+
+### v0.2.0
+
+- 改进 DMG 图标布局与背景图，改用 `dmgbuild` 程序化写入 `.DS_Store`，结果可复现。
+
+### v0.1.0
+
+- 首个可运行版本：Tauri 2 桌面壳 + 内置 Node.js Runtime + DeepSeek Harness Runtime，UI 由 Tauri WebView 承载。
 
 ## 声明
 

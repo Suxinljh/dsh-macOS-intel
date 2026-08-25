@@ -148,6 +148,10 @@ pub fn run() {
                 .arg("127.0.0.1")
                 .arg("--port")
                 .arg(port_arg.to_string())
+                // Newer harness `dsh web` auto-opens the system default browser.
+                // The desktop shell provides its own Tauri WebView as the UI
+                // surface, so suppress the harness's browser launch.
+                .arg("--no-open")
                 .current_dir(&app_cwd)
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped())
