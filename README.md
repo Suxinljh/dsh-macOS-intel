@@ -22,16 +22,16 @@
 
 ## 下载
 
-最新版本：**v0.1.2**
+最新版本：**v0.1.2-alpha.2**（桌面壳显示版本 0.1.2）
 
 内置 DeepSeek Harness：`dsh-v0.1.2-alpha.2`
 
-[GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
+- [GitHub Release v0.1.2-alpha.2](https://github.com/Suxinljh/dsh-macOS-intel/releases/tag/v0.1.2-alpha.2)
 
 当前版本提供 Intel / x86_64 macOS 构建，包含两种产物：
 
-- `DeepSeek.Harness.Intel-<version>_x64.dmg`：桌面应用，双击后将 `.app` 拖入 `Applications` 即可。
-- `dsh-<version>-macos-x64.pkg`：命令行安装包，把 Harness 与捆绑的 Node Runtime 安装到 `/usr/local/dsh`，并在 `/usr/local/bin/dsh` 暴露 `dsh` 命令。
+- `DeepSeek.Harness.Intel-0.1.2_x64.dmg`：桌面应用，双击后将 `.app` 拖入 `Applications` 即可。
+- `dsh-0.1.2-macos-x64.pkg`：命令行安装包，把 Harness 与捆绑的 Node Runtime 安装到 `/usr/local/dsh`，并在 `/usr/local/bin/dsh` 暴露 `dsh` 命令。
 
 ## 工作方式
 

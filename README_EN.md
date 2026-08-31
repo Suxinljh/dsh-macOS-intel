@@ -22,16 +22,16 @@ The goal is to provide a lightweight `.app` distribution that runs DeepSeek Harn
 
 ## Download
 
-Latest release: **v0.1.2**
+Latest release: **v0.1.2-alpha.2** (desktop shell shows 0.1.2)
 
 Bundled DeepSeek Harness: `dsh-v0.1.2-alpha.2`
 
-[GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
+- [GitHub Release v0.1.2-alpha.2](https://github.com/Suxinljh/dsh-macOS-intel/releases/tag/v0.1.2-alpha.2)
 
 The current release provides macOS builds for Intel / x86_64 in two forms:
 
-- `DeepSeek.Harness.Intel-<version>_x64.dmg` — the desktop app. Open it and drag `.app` into `Applications`.
-- `dsh-<version>-macos-x64.pkg` — a command-line installer. It installs Harness together with a bundled Node runtime under `/usr/local/dsh` and exposes the `dsh` command at `/usr/local/bin/dsh`.
+- `DeepSeek.Harness.Intel-0.1.2_x64.dmg` — the desktop app. Open it and drag `.app` into `Applications`.
+- `dsh-0.1.2-macos-x64.pkg` — a command-line installer. It installs Harness together with a bundled Node runtime under `/usr/local/dsh` and exposes the `dsh` command at `/usr/local/bin/dsh`.
 
 ## How It Works
 
