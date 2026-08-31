@@ -3,8 +3,8 @@
 // Lifecycle:
 //   1. Resolve the bundled resource directory (node runtime + dsh app slice).
 //   2. Spawn the bundled Node runtime running `apps/cli/lib/bin.js web`.
-//   3. Drain node stdout/stderr to ~/.dsh/logs and parse the bound port from
-//      the "dsh web: http://127.0.0.1:<port>" ready line.
+//   3. Drain node stdout/stderr to ~/.dsh/logs and parse the loopback URL from
+//      the "dsh web: http://127.0.0.1:<port>[/?token=...]" ready line.
 //   4. Open the main WebView window pointed at the local server.
 //   5. On app exit, SIGTERM the Node child for a clean shutdown.
 //
@@ -89,12 +89,25 @@ fn open_log(name: &str) -> std::fs::File {
         })
 }
 
-/// Parse the bound port out of a `dsh web: http://127.0.0.1:<port>` line.
-fn parse_port(line: &str) -> Option<u16> {
-    let rest = line.get(line.find("dsh web:")?..)?;
-    let after = rest.get(rest.find("http://127.0.0.1:")? + "http://127.0.0.1:".len()..)?;
-    let port_str: String = after.chars().take_while(|c| c.is_ascii_digit()).collect();
-    port_str.parse::<u16>().ok()
+/// Parse the loopback Web URL out of a `dsh web: <url>` ready line.
+///
+/// Since 0.1.2 the harness authenticates browser sessions: the printed URL
+/// carries a `?token=...` query, and the server exchanges it for an auth
+/// cookie on the first request. The WebView must therefore load that exact
+/// URL — a bare origin is rejected.
+fn parse_web_url(line: &str) -> Option<String> {
+    const LOOPBACK: &str = "http://127.0.0.1:";
+    // Trust only the readiness line; other logs may mention the address.
+    let after = line.get(line.find("dsh web: ")? + "dsh web: ".len()..)?;
+    let tail = after.get(after.find(LOOPBACK)? + LOOPBACK.len()..)?;
+    // Any trailing `(LAN: ...)` summary addresses another host, so stop at the
+    // first whitespace.
+    let end = tail.find(char::is_whitespace).unwrap_or(tail.len());
+    let port: String = tail.chars().take_while(|c| c.is_ascii_digit()).collect();
+    if port.is_empty() {
+        return None;
+    }
+    Some(format!("{}{}", LOOPBACK, &tail[..end]))
 }
 
 /// Kill the bundled Node server with SIGTERM for a graceful shutdown.
@@ -157,16 +170,16 @@ pub fn run() {
                 .stderr(Stdio::piped())
                 .spawn()?;
 
-            // Drain node stdio to logs and capture the bound port.
-            let (tx, rx) = std::sync::mpsc::channel::<u16>();
+            // Drain node stdio to logs and capture the ready URL.
+            let (tx, rx) = std::sync::mpsc::channel::<String>();
             if let Some(stdout) = child.stdout.take() {
                 let tx = tx.clone();
                 let mut log = open_log("stdout");
                 std::thread::spawn(move || {
                     for line in BufReader::new(stdout).lines().map_while(Result::ok) {
                         let _ = writeln!(log, "{}", line);
-                        if let Some(p) = parse_port(&line) {
-                            let _ = tx.send(p);
+                        if let Some(url) = parse_web_url(&line) {
+                            let _ = tx.send(url);
                         }
                     }
                 });
@@ -180,20 +193,22 @@ pub fn run() {
                 });
             }
 
-            let port = match rx.recv_timeout(Duration::from_secs(30)) {
-                Ok(port) => port,
+            // Since 0.1.2 the ready line is printed only after the profile's
+            // Loader tree settles, and first launch also initializes
+            // ~/.dsh/profiles; 30s proved too tight for that.
+            let url = match rx.recv_timeout(Duration::from_secs(60)) {
+                Ok(url) => url,
                 Err(error) => {
                     stop_server(&mut child);
                     return Err(Box::new(std::io::Error::new(
                         std::io::ErrorKind::TimedOut,
                         format!(
-                            "dsh web did not report readiness within 30 seconds: {}. See ~/.dsh/logs.",
+                            "dsh web did not report readiness within 60 seconds: {}. See ~/.dsh/logs.",
                             error
                         ),
                     )));
                 }
             };
-            let url = format!("http://127.0.0.1:{}", port);
             let _ = writeln!(open_log("desktop"), "dsh desktop: loading {}", url);
 
             let window = tauri::WebviewWindowBuilder::new(

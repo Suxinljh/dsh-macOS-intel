@@ -26,7 +26,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CORE_REPO="${CORE_REPO:-/Users/suxin/Suxin/code/DSH/deepseek-harness}"
+CORE_REPO="${CORE_REPO:-$ROOT/deepseek-harness}"
 STAGING="$ROOT/staging"
 RESOURCES="$ROOT/src-tauri/resources"
 RUNTIME_DIR="$RESOURCES/runtime"

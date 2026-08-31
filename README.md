@@ -22,11 +22,16 @@
 
 ## 下载
 
-最新版本：**v0.1.1**
+最新版本：**v0.1.2**
+
+内置 DeepSeek Harness：`dsh-v0.1.2-alpha.2`
 
 [GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
 
-当前版本提供 Intel / x86_64 macOS 构建。
+当前版本提供 Intel / x86_64 macOS 构建，包含两种产物：
+
+- `DeepSeek.Harness.Intel-<version>_x64.dmg`：桌面应用，双击后将 `.app` 拖入 `Applications` 即可。
+- `dsh-<version>-macos-x64.pkg`：命令行安装包，把 Harness 与捆绑的 Node Runtime 安装到 `/usr/local/dsh`，并在 `/usr/local/bin/dsh` 暴露 `dsh` 命令。
 
 ## 工作方式
 
@@ -394,6 +399,16 @@ x86_64 + arm64
 欢迎 DeepSeek Harness Maintainers 对项目结构和 Desktop Distribution 方案提出意见。
 
 ## 更新记录
+
+### v0.1.2
+
+- 对齐 DeepSeek Harness 官方版本 `dsh-v0.1.2-alpha.2`，桌面壳版本由 `0.1.1` 调整为 `0.1.2`。
+- 适配新版浏览器会话鉴权：`dsh web` 输出的就绪地址现在带 `?token=...`，服务端只接受携带该 token 或已换取 Cookie 的请求。桌面壳改为解析完整的就绪 URL，并让 WebView 加载带 token 的地址——沿用旧的裸地址会在首次请求时被拒绝。
+- 就绪等待超时由 30 秒放宽到 60 秒：新版只有在 profile 的 Loader 树就绪后才打印就绪行，首次启动还需要初始化 `~/.dsh/profiles`。
+- 修正 `scripts/build-tauri-macos.sh` 中 `CORE_REPO` 的默认路径。原默认值指向仓库外的路径，未显式传参时会直接构建失败。
+- 新增命令行安装包产物 `dsh-<version>-macos-x64.pkg`。
+
+> 已知问题：若 `dsh` 进程被强制退出，`~/.dsh/profiles/node_modules.lock` 可能残留，导致下次启动在等待写锁时超时。删除该 `.lock` 文件即可恢复。
 
 ### v0.1.1
 

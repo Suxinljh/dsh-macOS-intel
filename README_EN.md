@@ -22,11 +22,16 @@ The goal is to provide a lightweight `.app` distribution that runs DeepSeek Harn
 
 ## Download
 
-Latest release: **v0.1.1**
+Latest release: **v0.1.2**
+
+Bundled DeepSeek Harness: `dsh-v0.1.2-alpha.2`
 
 [GitHub Releases](https://github.com/Suxinljh/dsh-macOS-intel/releases)
 
-The current release provides a macOS build for Intel / x86_64.
+The current release provides macOS builds for Intel / x86_64 in two forms:
+
+- `DeepSeek.Harness.Intel-<version>_x64.dmg` — the desktop app. Open it and drag `.app` into `Applications`.
+- `dsh-<version>-macos-x64.pkg` — a command-line installer. It installs Harness together with a bundled Node runtime under `/usr/local/dsh` and exposes the `dsh` command at `/usr/local/bin/dsh`.
 
 ## How It Works
 
@@ -365,6 +370,16 @@ The implementation does not require architectural changes to Harness.
 If this approach is considered useful by the maintainers, the desktop shell can be adapted to the preferred upstream repository structure and submitted as a PR.
 
 ## Changelog
+
+### v0.1.2
+
+- Aligned with the official DeepSeek Harness release `dsh-v0.1.2-alpha.2`; the desktop shell version moved from `0.1.1` to `0.1.2`.
+- Adapted to the new browser-session authentication: `dsh web` now prints its ready address with a `?token=...` query, and the server only accepts requests that carry that token or the cookie it is exchanged for. The desktop shell now parses the full ready URL and loads the token-carrying address in the WebView — the previous bare origin is rejected on the first request.
+- Raised the readiness timeout from 30 to 60 seconds: newer harness builds print the ready line only after the profile's Loader tree settles, and the first launch also has to initialize `~/.dsh/profiles`.
+- Fixed the default `CORE_REPO` path in `scripts/build-tauri-macos.sh`. It pointed outside the repository, so the build failed outright unless the path was passed explicitly.
+- Added the command-line installer artifact `dsh-<version>-macos-x64.pkg`.
+
+> Known issue: if a `dsh` process is killed abruptly, a stale `~/.dsh/profiles/node_modules.lock` can remain and make the next launch time out waiting for the writer lock. Removing that `.lock` file restores normal startup.
 
 ### v0.1.1
 
